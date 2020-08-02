@@ -44,66 +44,71 @@ class _HomePageState extends State<HomePage> {
         ),
         child: Row(
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 85),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20.0),
-                  child: Text('Made by Nghia',
-                      style: TextStyle(color: AppColors.white)),
-                ),
-                SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20.0),
-                  child: Text('Covid-19\nPandemic Report',
-                      style: GoogleFonts.lato(
-                        textStyle: Theme.of(context).textTheme.bodyText1,
-                        color: AppColors.white,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.2,
-                      )),
-                ),
-                SizedBox(height: 36),
-                FutureBuilder<GlobalReport>(
-                  future: getGlobalReport,
-                  builder: (context, snapshot) {
-                    final isLoaded = snapshot.connectionState == ConnectionState.done;
-                    final globalReport = snapshot.data;
-                    if (isLoaded) {
-                      return Container(
-                        width: ScreenUtil.screenWidth,
-                        padding: EdgeInsets.zero,
-                        child: CarouselSlider.builder(
-                          itemCount: isLoaded ? globalReport.total : 10,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              width: 305,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.all(Radius.circular(22)),
-                                  image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover)
-                              ),
-                              child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
-                            );
-                          },
-                          options: CarouselOptions(
-                              height: 500,
-                              viewportFraction: 0.75,
-                              initialPage: 0,
-                              enlargeCenterPage: true,
-                              enableInfiniteScroll: false,
-                              onPageChanged: (index, reason) {
+            SingleChildScrollView(
+              child: Container(
+                height: ScreenUtil.screenHeight,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 85),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: Text('Made by Nghia',
+                          style: TextStyle(color: AppColors.white)),
+                    ),
+                    SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: Text('Covid-19\nPandemic Report',
+                          style: GoogleFonts.lato(
+                            textStyle: Theme.of(context).textTheme.bodyText1,
+                            color: AppColors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.2,
+                          )),
+                    ),
+                    SizedBox(height: 36),
+                    FutureBuilder<GlobalReport>(
+                      future: getGlobalReport,
+                      builder: (context, snapshot) {
+                        final isLoaded = snapshot.connectionState == ConnectionState.done;
+                        final globalReport = snapshot.data;
+                        if (isLoaded) {
+                          return Container(
+                            width: ScreenUtil.screenWidth,
+                            padding: EdgeInsets.zero,
+                            child: CarouselSlider.builder(
+                              itemCount: isLoaded ? globalReport.total : 10,
+                              itemBuilder: (context, index) {
+                                return Container(
+                                  width: 305,
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.all(Radius.circular(22)),
+                                      image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover)
+                                  ),
+                                  child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
+                                );
+                              },
+                              options: CarouselOptions(
+                                  height: 500,
+                                  viewportFraction: 0.75,
+                                  initialPage: 0,
+                                  enlargeCenterPage: true,
+                                  enableInfiniteScroll: false,
+                                  onPageChanged: (index, reason) {
 
-                              }
-                          ),
-                        ),
-                      );
-                    }
-                    return Container();
-                  }
-                )
-              ],
+                                  }
+                              ),
+                            ),
+                          );
+                        }
+                        return Container();
+                      }
+                    )
+                  ],
+                ),
+              ),
             ),
           ],
         ),
