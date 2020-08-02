@@ -19,11 +19,15 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  final secondPageViewController = PageController(viewportFraction: 0.8, initialPage: 0);
+  final CarouselController pageController = CarouselController();
   AnimationController animationController;
   Animation<double> start, end;
+  Animation<double> floatButtonSize;
+  Animation<double> floatButtonOpacity;
   Animation<Color> color;
   Future<GlobalReport> getGlobalReport;
+
+  int _currentIndex = 0;
 
   @override
   void initState() {
@@ -51,79 +55,88 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             stops: [start.value, start.value, end.value, end.value]
           )
         ),
-        child: Row(
-          children: [
-            SingleChildScrollView(
-              child: Container(
-                height: ScreenUtil.screenHeight,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(height: 85),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Text('Made by Nghia',
-                          style: TextStyle(color: color.value)),
-                    ),
-                    SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Text('Covid-19\nPandemic Report',
-                          style: GoogleFonts.lato(
-                            textStyle: Theme.of(context).textTheme.bodyText1,
-                            color: color.value,
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.2,
-                          )),
-                    ),
-                    SizedBox(height: 36),
-                    FutureBuilder<GlobalReport>(
-                      future: getGlobalReport,
-                      builder: (context, snapshot) {
-                        final isLoaded = snapshot.connectionState == ConnectionState.done;
-                        final globalReport = snapshot.data;
-                        if (isLoaded) {
-                          return Container(
-                            width: ScreenUtil.screenWidth,
-                            padding: EdgeInsets.zero,
-                            child: CarouselSlider.builder(
-                              itemCount: isLoaded ? globalReport.total : 10,
-                              itemBuilder: (context, index) {
-                                return Container(
-                                  width: 305,
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.all(Radius.circular(22)),
-                                      image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover),
-                                  ),
-                                  child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
-                                );
-                              },
-                              options: CarouselOptions(
-                                  height: 500,
-                                  viewportFraction: 0.75,
-                                  initialPage: 0,
-                                  enlargeCenterPage: true,
-                                  enableInfiniteScroll: false,
-                                  onPageChanged: (index, reason) {
-                                    if (index == 0) {
-                                      animationController.reverse();
-                                    } else if (index == 1) {
-                                      animationController.forward();
-                                    }
-                                  }
-                              ),
-                            ),
-                          );
-                        }
-                        return Container();
-                      }
-                    )
-                  ],
+        child: SingleChildScrollView(
+          child: Container(
+            height: ScreenUtil.screenHeight,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 85),
+                Padding(
+                  padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Made by Nghia', style: TextStyle(color: color.value)),
+                      IconButton(
+                        icon: Icon(Icons.home),
+                        onPressed: () {
+                          if (_currentIndex != 0)
+                            pageController.animateToPage(0);
+                        },
+                      )
+                    ],
+                  ),
                 ),
-              ),
+                SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.only(left: 20.0),
+                  child: Text('Covid-19\nPandemic Report',
+                      style: GoogleFonts.lato(
+                        textStyle: Theme.of(context).textTheme.bodyText1,
+                        color: color.value,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.2,
+                      )),
+                ),
+                SizedBox(height: 36),
+                FutureBuilder<GlobalReport>(
+                  future: getGlobalReport,
+                  builder: (context, snapshot) {
+                    final isLoaded = snapshot.connectionState == ConnectionState.done;
+                    final globalReport = snapshot.data;
+                    if (isLoaded) {
+                      return Container(
+                        width: ScreenUtil.screenWidth,
+                        padding: EdgeInsets.zero,
+                        child: CarouselSlider.builder(
+                          carouselController: pageController,
+                          itemCount: isLoaded ? globalReport.total : 10,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: 305,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.all(Radius.circular(22)),
+                                  image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover),
+                              ),
+                              child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
+                            );
+                          },
+                          options: CarouselOptions(
+                              height: 500,
+                              viewportFraction: 0.75,
+                              initialPage: 0,
+                              enlargeCenterPage: true,
+                              enableInfiniteScroll: false,
+                              onPageChanged: (index, reason) {
+                                if (index == 0) {
+                                  animationController.reverse();
+                                } else if (index == 1) {
+                                  animationController.forward();
+                                }
+                                _currentIndex = index;
+                              }
+                          ),
+                        ),
+                      );
+                    }
+                    return Container();
+                  }
+                )
+              ],
             ),
-          ],
+          ),
         ),
       ),
       floatingActionButton: Container(
