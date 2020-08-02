@@ -128,8 +128,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             onPageChanged: (index, reason) {
                               if (index == 0) {
                                 animationController.reverse();
-                              } else if (index == 1) {
-                                animationController.forward();
+                              } else {
+                                if (animationController.status != AnimationStatus.completed) {
+                                  animationController.forward();
+                                }
                               }
                               _currentIndex = index;
                             }
@@ -189,7 +191,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                             pageController.animateToPage(index);
                             buttonAnimationController.reverse();
                           }
-
                         }
                       },
                       child: Image.asset(AppImages.icSearch)),
