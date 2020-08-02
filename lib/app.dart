@@ -20,11 +20,13 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final CarouselController pageController = CarouselController();
-  AnimationController animationController;
+  AnimationController backgroundAnimationController;
   AnimationController buttonAnimationController;
+  AnimationController loadingAnimationController;
   Animation<double> start, end;
   Animation<double> floatButtonSize;
   Animation<double> floatButtonOpacity;
+  Animation<Offset> listTransition;
   Animation<Color> color;
   Future<GlobalReport> getGlobalReport;
 
@@ -35,11 +37,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     getGlobalReport = widget.repository.getGlobalReport();
-    animationController = AnimationController(vsync: this, duration: Duration(milliseconds: 200), )
+
+    loadingAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 2000))
       ..addListener(() { setState(() {}); });
-    start = Tween<double>(begin: 0.75, end: 0).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
-    end = Tween<double>(begin: 1, end: 0.75).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
-    color = ColorTween(begin: Colors.white, end: Colors.black).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
+    listTransition = Tween<Offset>(begin: Offset(3, 0), end: Offset.zero).animate(CurvedAnimation(parent: loadingAnimationController, curve: Curves.ease));
+
+    backgroundAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 200), )
+      ..addListener(() { setState(() {}); });
+    start = Tween<double>(begin: 0.75, end: 0).animate(CurvedAnimation(parent: backgroundAnimationController, curve: Curves.fastOutSlowIn));
+    end = Tween<double>(begin: 1, end: 0.75).animate(CurvedAnimation(parent: backgroundAnimationController, curve: Curves.fastOutSlowIn));
+    color = ColorTween(begin: Colors.white, end: Colors.black).animate(CurvedAnimation(parent: backgroundAnimationController, curve: Curves.fastOutSlowIn));
 
     buttonAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 200), )
       ..addListener(() { setState(() {}); });
@@ -58,6 +65,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       builder: (context, snapshot) {
         final isLoaded = snapshot.connectionState == ConnectionState.done;
         final globalReport = snapshot.data;
+        if (isLoaded && loadingAnimationController.status != AnimationStatus.completed) {
+          loadingAnimationController.forward();
+        }
         return Scaffold(
           body: Container(
             height: MediaQuery.of(context).size.height,
@@ -106,38 +116,50 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     isLoaded ? Container(
                       width: ScreenUtil.screenWidth,
                       padding: EdgeInsets.zero,
-                      child: CarouselSlider.builder(
-                        carouselController: pageController,
-                        itemCount: isLoaded ? globalReport.total : 10,
-                        itemBuilder: (context, index) {
-                          return Container(
-                            width: 305,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.all(Radius.circular(22)),
-                              image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover),
-                            ),
-                            child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
-                          );
-                        },
-                        options: CarouselOptions(
-                            height: 500,
-                            viewportFraction: 0.75,
-                            initialPage: 0,
-                            enlargeCenterPage: true,
-                            enableInfiniteScroll: false,
-                            onPageChanged: (index, reason) {
-                              if (index == 0) {
-                                animationController.reverse();
-                              } else {
-                                if (animationController.status != AnimationStatus.completed) {
-                                  animationController.forward();
+                      child: SlideTransition(
+                        position: listTransition,
+                        child: CarouselSlider.builder(
+                          carouselController: pageController,
+                          itemCount: isLoaded ? (globalReport?.total ?? 0) : 10,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: 305,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.all(Radius.circular(22)),
+                                image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover),
+                              ),
+                              child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
+                            );
+                          },
+                          options: CarouselOptions(
+                              height: 500,
+                              viewportFraction: 0.75,
+                              initialPage: 0,
+                              enlargeCenterPage: true,
+                              enableInfiniteScroll: false,
+                              onPageChanged: (index, reason) {
+                                if (index == 0) {
+                                  backgroundAnimationController.reverse();
+                                } else {
+                                  if (backgroundAnimationController.status != AnimationStatus.completed) {
+                                    backgroundAnimationController.forward();
+                                  }
                                 }
+                                _currentIndex = index;
                               }
-                              _currentIndex = index;
-                            }
+                          ),
                         ),
                       ),
-                    ) : Container(),
+                    ) : Center(
+                      child: Container(
+                        margin: EdgeInsets.only(top: 20),
+                        child: Lottie.asset(
+                          'json/loading.json',
+                          width: ScreenUtil.screenWidth * 2 / 3 ,
+                          fit: BoxFit.fill,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
