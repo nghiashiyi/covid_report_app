@@ -42,5 +42,4 @@ class GlobalReport {
         return AppImages.otherList[ index % 5 ];
     }
   }
-
 }

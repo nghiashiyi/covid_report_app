@@ -29,6 +29,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<GlobalReport> getGlobalReport;
 
   int _currentIndex = 0;
+  String _inputText = '';
 
   @override
   void initState() {
@@ -52,128 +53,150 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     ScreenUtil.init(context, width: 414, height: 896);
-    return Scaffold(
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [ AppColors.red, AppColors.white, AppColors.white, AppColors.grey],
-            stops: [start.value, start.value, end.value, end.value]
-          )
-        ),
-        child: SingleChildScrollView(
-          child: Container(
-            height: ScreenUtil.screenHeight,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 85),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Made by Nghia', style: TextStyle(color: color.value)),
-                      IconButton(
-                        icon: Icon(Icons.home),
-                        onPressed: () {
-                          if (_currentIndex != 0)
-                            pageController.animateToPage(0);
-                        },
-                      )
-                    ],
-                  ),
-                ),
-                SizedBox(height: 12),
-                Padding(
-                  padding: const EdgeInsets.only(left: 20.0),
-                  child: Text('Covid-19\nPandemic Report',
-                      style: GoogleFonts.lato(
-                        textStyle: Theme.of(context).textTheme.bodyText1,
-                        color: color.value,
-                        fontSize: 28,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.2,
-                      )),
-                ),
-                SizedBox(height: 36),
-                FutureBuilder<GlobalReport>(
-                  future: getGlobalReport,
-                  builder: (context, snapshot) {
-                    final isLoaded = snapshot.connectionState == ConnectionState.done;
-                    final globalReport = snapshot.data;
-                    if (isLoaded) {
-                      return Container(
-                        width: ScreenUtil.screenWidth,
-                        padding: EdgeInsets.zero,
-                        child: CarouselSlider.builder(
-                          carouselController: pageController,
-                          itemCount: isLoaded ? globalReport.total : 10,
-                          itemBuilder: (context, index) {
-                            return Container(
-                              width: 305,
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.all(Radius.circular(22)),
-                                  image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover),
-                              ),
-                              child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
-                            );
-                          },
-                          options: CarouselOptions(
-                              height: 500,
-                              viewportFraction: 0.75,
-                              initialPage: 0,
-                              enlargeCenterPage: true,
-                              enableInfiniteScroll: false,
-                              onPageChanged: (index, reason) {
-                                if (index == 0) {
-                                  animationController.reverse();
-                                } else if (index == 1) {
-                                  animationController.forward();
-                                }
-                                _currentIndex = index;
-                              }
-                          ),
-                        ),
-                      );
-                    }
-                    return Container();
-                  }
-                )
-              ],
+    return FutureBuilder<GlobalReport>(
+      future: getGlobalReport,
+      builder: (context, snapshot) {
+        final isLoaded = snapshot.connectionState == ConnectionState.done;
+        final globalReport = snapshot.data;
+        return Scaffold(
+          body: Container(
+            height: MediaQuery.of(context).size.height,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [ AppColors.red, AppColors.white, AppColors.white, AppColors.grey],
+                stops: [start.value, start.value, end.value, end.value]
+              )
             ),
-          ),
-        ),
-      ),
-      floatingActionButton: Container(
-          width: floatButtonSize.value,
-          child: FloatingActionButton.extended(
-            backgroundColor: AppColors.white,
-            label: Row(
-              children: [
-                FadeTransition(
-                  opacity: floatButtonOpacity,
-                  child: Container(
-                    width: floatButtonSize.value - 50,
-                    child: TextField(
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Enter country'
+            child: SingleChildScrollView(
+              child: Container(
+                height: ScreenUtil.screenHeight,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 85),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Made by Nghia', style: TextStyle(color: color.value)),
+                          IconButton(
+                            icon: Icon(Icons.home),
+                            onPressed: () {
+                              if (_currentIndex != 0)
+                                pageController.animateToPage(0);
+                            },
+                          )
+                        ],
                       ),
                     ),
-                  ),
+                    SizedBox(height: 12),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: Text('Covid-19\nPandemic Report',
+                          style: GoogleFonts.lato(
+                            textStyle: Theme.of(context).textTheme.bodyText1,
+                            color: color.value,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.2,
+                          )),
+                    ),
+                    SizedBox(height: 36),
+                    isLoaded ? Container(
+                      width: ScreenUtil.screenWidth,
+                      padding: EdgeInsets.zero,
+                      child: CarouselSlider.builder(
+                        carouselController: pageController,
+                        itemCount: isLoaded ? globalReport.total : 10,
+                        itemBuilder: (context, index) {
+                          return Container(
+                            width: 305,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.all(Radius.circular(22)),
+                              image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover),
+                            ),
+                            child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
+                          );
+                        },
+                        options: CarouselOptions(
+                            height: 500,
+                            viewportFraction: 0.75,
+                            initialPage: 0,
+                            enlargeCenterPage: true,
+                            enableInfiniteScroll: false,
+                            onPageChanged: (index, reason) {
+                              if (index == 0) {
+                                animationController.reverse();
+                              } else if (index == 1) {
+                                animationController.forward();
+                              }
+                              _currentIndex = index;
+                            }
+                        ),
+                      ),
+                    ) : Container(),
+                  ],
                 ),
-                InkWell(
-                  onTap: () {
-                    if (!isEnd) {
-                      buttonAnimationController.forward();
-                    } else {
-                      buttonAnimationController.reverse();
-                    }
-                  },
-                  child: Image.asset(AppImages.icSearch)),
-              ],
-            ))),
+              ),
+            ),
+          ),
+          floatingActionButton: Container(
+              width: floatButtonSize.value,
+              child: FloatingActionButton.extended(
+                onPressed: () {},
+                backgroundColor: AppColors.white,
+                label: Row(
+                  children: [
+                    FadeTransition(
+                      opacity: floatButtonOpacity,
+                      child: Container(
+                        width: floatButtonSize.value - 50,
+                        child: TextField(
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            hintText: 'Enter country'
+                          ),
+                          onChanged: (text) {
+                            _inputText = text;
+                          },
+                          onSubmitted: (text) {
+                            if (_inputText.isNotEmpty) {
+                              if (globalReport.countries.firstWhere((element) => element.country.toLowerCase() == _inputText.toLowerCase(), orElse: () => null) == null) {
+                                return;
+                              }
+                              final searchedCountry = globalReport.countries.firstWhere((element) => element.country.contains(_inputText), orElse: () => null);
+                              final index = globalReport.getDecorDisplayedList().indexOf(searchedCountry);
+                              pageController.animateToPage(index);
+                              buttonAnimationController.reverse();
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        if (!isEnd) {
+                          buttonAnimationController.forward();
+                        } else {
+                          if (_inputText.isNotEmpty) {
+                            if (globalReport.countries.firstWhere((element) => element.country.toLowerCase() == _inputText.toLowerCase(), orElse: () => null) == null) {
+                              return;
+                            }
+                            FocusScope.of(context).unfocus();
+                            final searchedCountry = globalReport.countries.firstWhere((element) => element.country.contains(_inputText), orElse: () => null);
+                            final index = globalReport.getDecorDisplayedList().indexOf(searchedCountry);
+                            pageController.animateToPage(index);
+                            buttonAnimationController.reverse();
+                          }
+
+                        }
+                      },
+                      child: Image.asset(AppImages.icSearch)),
+                  ],
+                ))),
+        );
+      }
     );
   }
 }
