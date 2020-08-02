@@ -8,9 +8,7 @@ part of 'global_report.dart';
 
 GlobalReport _$GlobalReportFromJson(Map<String, dynamic> json) {
   return GlobalReport(
-    json['totalConfirmed'] as int,
-    json['TotalDeaths'] as int,
-    json['TotalRecovered'] as int,
+    Global.fromJson(json['Global']),
     (json['Countries'] as List)
         ?.map((e) => e == null
             ? null
@@ -21,8 +19,5 @@ GlobalReport _$GlobalReportFromJson(Map<String, dynamic> json) {
 
 Map<String, dynamic> _$GlobalReportToJson(GlobalReport instance) =>
     <String, dynamic>{
-      'totalConfirmed': instance.totalConfirmed,
-      'TotalDeaths': instance.totalDeaths,
-      'TotalRecovered': instance.totalRecovered,
       'Countries': instance.countries,
     };

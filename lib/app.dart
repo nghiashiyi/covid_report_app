@@ -1,18 +1,33 @@
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:covid_app/model/country.dart';
+import 'package:covid_app/model/global_report.dart';
+import 'package:covid_app/utils/repository.dart';
 import 'package:covid_app/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 
+
 class HomePage extends StatefulWidget {
+  const HomePage({Key key, this.repository}) : super(key: key);
+
+  final Repository repository;
+
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  final firstPageViewController = PageController(viewportFraction: 1, initialPage: 0);
   final secondPageViewController = PageController(viewportFraction: 0.8, initialPage: 0);
+
+  Future<GlobalReport> getGlobalReport;
+  
+  @override
+  void initState() {
+    super.initState();
+    getGlobalReport = widget.repository.getGlobalReport();
+  }
 
 
   @override
@@ -51,32 +66,42 @@ class _HomePageState extends State<HomePage> {
                       )),
                 ),
                 SizedBox(height: 36),
-                Container(
-                  width: ScreenUtil.screenWidth,
-                  padding: EdgeInsets.zero,
-                  child: CarouselSlider.builder(
-                    itemCount: 10,
-                    itemBuilder: (context, index) {
+                FutureBuilder<GlobalReport>(
+                  future: getGlobalReport,
+                  builder: (context, snapshot) {
+                    final isLoaded = snapshot.connectionState == ConnectionState.done;
+                    final globalReport = snapshot.data;
+                    if (isLoaded) {
                       return Container(
-                        width: 305,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(22)),
-                          image: DecorationImage(image: AssetImage(AppImages.img1), fit: BoxFit.cover)
-                        ),
-                        child: ReportCard(),
-                      );
-                    },
-                    options: CarouselOptions(
-                        height: 500,
-                        viewportFraction: 0.75,
-                        initialPage: 0,
-                        enlargeCenterPage: true,
-                        enableInfiniteScroll: false,
-                        onPageChanged: (index, reason) {
+                        width: ScreenUtil.screenWidth,
+                        padding: EdgeInsets.zero,
+                        child: CarouselSlider.builder(
+                          itemCount: isLoaded ? globalReport.total : 10,
+                          itemBuilder: (context, index) {
+                            return Container(
+                              width: 305,
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.all(Radius.circular(22)),
+                                  image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover)
+                              ),
+                              child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
+                            );
+                          },
+                          options: CarouselOptions(
+                              height: 500,
+                              viewportFraction: 0.75,
+                              initialPage: 0,
+                              enlargeCenterPage: true,
+                              enableInfiniteScroll: false,
+                              onPageChanged: (index, reason) {
 
-                        }
-                    ),
-                  ),
+                              }
+                          ),
+                        ),
+                      );
+                    }
+                    return Container();
+                  }
                 )
               ],
             ),
@@ -107,6 +132,10 @@ class _HomePageState extends State<HomePage> {
 }
 
 class ReportCard extends StatefulWidget {
+  final CountryReport report;
+
+  const ReportCard({Key key, this.report}) : super(key: key);
+
   @override
   _ReportCardState createState() => _ReportCardState();
 }
@@ -175,7 +204,7 @@ class _ReportCardState extends State<ReportCard> with TickerProviderStateMixin {
               SizedBox(height: 8),
               SlideTransition(
                 position: goUpAnimation,
-                child: Text('123,456,789',
+                child: Text(widget.report.totalConfirmed?.readable ?? '',
                   style: GoogleFonts.lato(
                     textStyle: Theme.of(context).textTheme.bodyText1,
                     color: AppColors.white,
@@ -186,15 +215,23 @@ class _ReportCardState extends State<ReportCard> with TickerProviderStateMixin {
                 ),
               ),
               Padding(
-                padding: EdgeInsets.only(bottom: 50.0),
-                child: Text('Total cases in the world',
-                  style: GoogleFonts.lato(
-                    textStyle: Theme.of(context).textTheme.bodyText2,
-                    color: AppColors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w400,
-                    letterSpacing: 0.2,
-                  ),
+                padding: EdgeInsets.only(bottom: 50.0, left: 8.0, right: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Flexible(
+                      child: Text('Total cases in ${widget.report.country}',
+                        style: GoogleFonts.lato(
+                          textStyle: Theme.of(context).textTheme.bodyText2,
+                          color: AppColors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w400,
+                          letterSpacing: 0.2,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -233,7 +270,7 @@ class _ReportCardState extends State<ReportCard> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('123,456,789',
+                    Text(widget.report.totalDeaths.readable ?? '',
                       style: GoogleFonts.lato(
                         textStyle: Theme.of(context).textTheme.bodyText1,
                         color: AppColors.white,
@@ -265,7 +302,7 @@ class _ReportCardState extends State<ReportCard> with TickerProviderStateMixin {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('123,456,789',
+                    Text(widget.report.totalRecovered.readable,
                       style: GoogleFonts.lato(
                         textStyle: Theme.of(context).textTheme.bodyText1,
                         color: AppColors.white,
@@ -276,7 +313,7 @@ class _ReportCardState extends State<ReportCard> with TickerProviderStateMixin {
                     ),
                     Padding(
                       padding: EdgeInsets.only(bottom: 20.0),
-                      child: Text('Total Deaths',
+                      child: Text('Total Recovery',
                         style: GoogleFonts.lato(
                           textStyle: Theme.of(context).textTheme.bodyText2,
                           color: AppColors.white,

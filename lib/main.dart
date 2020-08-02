@@ -1,4 +1,5 @@
 import 'package:covid_app/app.dart';
+import 'package:covid_app/utils/repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       debugShowCheckedModeBanner: false,
-      home: HomePage(),
+      home: HomePage(repository: Repository()),
     );
   }
 }
