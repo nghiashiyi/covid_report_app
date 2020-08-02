@@ -21,6 +21,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final CarouselController pageController = CarouselController();
   AnimationController animationController;
+  AnimationController buttonAnimationController;
   Animation<double> start, end;
   Animation<double> floatButtonSize;
   Animation<double> floatButtonOpacity;
@@ -38,9 +39,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     start = Tween<double>(begin: 0.75, end: 0).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
     end = Tween<double>(begin: 1, end: 0.75).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
     color = ColorTween(begin: Colors.white, end: Colors.black).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
+
+    buttonAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 200), )
+      ..addListener(() { setState(() {}); });
+    floatButtonSize = Tween<double>(begin: 50, end: 250).animate(CurvedAnimation(parent: buttonAnimationController, curve: Curves.ease));
+    floatButtonOpacity = Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: buttonAnimationController, curve: Curves.ease));
   }
 
-  bool get isEnd => end.value == 0.75;
+  bool get isEnd => floatButtonSize.value == 250;
 
 
   @override
@@ -140,23 +146,32 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       ),
       floatingActionButton: Container(
-          width: 250,
+          width: floatButtonSize.value,
           child: FloatingActionButton.extended(
             backgroundColor: AppColors.white,
-            onPressed: () {
-            },
             label: Row(
               children: [
-                Container(
-                  width: 200,
-                  child: TextField(
-                    decoration: InputDecoration(
-                      border: InputBorder.none,
-                      hintText: 'Enter country'
+                FadeTransition(
+                  opacity: floatButtonOpacity,
+                  child: Container(
+                    width: floatButtonSize.value - 50,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        border: InputBorder.none,
+                        hintText: 'Enter country'
+                      ),
                     ),
                   ),
                 ),
-                Image.asset(AppImages.icSearch),
+                InkWell(
+                  onTap: () {
+                    if (!isEnd) {
+                      buttonAnimationController.forward();
+                    } else {
+                      buttonAnimationController.reverse();
+                    }
+                  },
+                  child: Image.asset(AppImages.icSearch)),
               ],
             ))),
     );
