@@ -20,6 +20,7 @@ class AppColors {
   static const white = const Color(0xffffffff);
   static const grey = const Color(0xffF5F5F5);
   static const green = Colors.green;
+  static const black = const Color(0x16000000);
 }
 
 extension NumberFormatExtension on num {

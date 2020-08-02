@@ -18,16 +18,25 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final secondPageViewController = PageController(viewportFraction: 0.8, initialPage: 0);
-
+  AnimationController animationController;
+  Animation<double> start, end;
+  Animation<Color> color;
   Future<GlobalReport> getGlobalReport;
-  
+
   @override
   void initState() {
     super.initState();
     getGlobalReport = widget.repository.getGlobalReport();
+    animationController = AnimationController(vsync: this, duration: Duration(milliseconds: 200), )
+      ..addListener(() { setState(() {}); });
+    start = Tween<double>(begin: 0.75, end: 0).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
+    end = Tween<double>(begin: 1, end: 0.75).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
+    color = ColorTween(begin: Colors.white, end: Colors.black).animate(CurvedAnimation(parent: animationController, curve: Curves.fastOutSlowIn));
   }
+
+  bool get isEnd => end.value == 0.75;
 
 
   @override
@@ -39,7 +48,7 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [ AppColors.red, AppColors.white, AppColors.white, AppColors.grey],
-            stops: [0.75, 0.75, 1, 1]
+            stops: [start.value, start.value, end.value, end.value]
           )
         ),
         child: Row(
@@ -54,7 +63,7 @@ class _HomePageState extends State<HomePage> {
                     Padding(
                       padding: const EdgeInsets.only(left: 20.0),
                       child: Text('Made by Nghia',
-                          style: TextStyle(color: AppColors.white)),
+                          style: TextStyle(color: color.value)),
                     ),
                     SizedBox(height: 12),
                     Padding(
@@ -62,7 +71,7 @@ class _HomePageState extends State<HomePage> {
                       child: Text('Covid-19\nPandemic Report',
                           style: GoogleFonts.lato(
                             textStyle: Theme.of(context).textTheme.bodyText1,
-                            color: AppColors.white,
+                            color: color.value,
                             fontSize: 28,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.2,
@@ -85,7 +94,7 @@ class _HomePageState extends State<HomePage> {
                                   width: 305,
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.all(Radius.circular(22)),
-                                      image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover)
+                                      image: DecorationImage(image: AssetImage(globalReport.getCorrespondingImage(index)), fit: BoxFit.cover),
                                   ),
                                   child: ReportCard(report: globalReport.getDecorDisplayedList()[index]),
                                 );
@@ -97,7 +106,11 @@ class _HomePageState extends State<HomePage> {
                                   enlargeCenterPage: true,
                                   enableInfiniteScroll: false,
                                   onPageChanged: (index, reason) {
-
+                                    if (index == 0) {
+                                      animationController.reverse();
+                                    } else if (index == 1) {
+                                      animationController.forward();
+                                    }
                                   }
                               ),
                             ),
@@ -117,7 +130,8 @@ class _HomePageState extends State<HomePage> {
           width: 250,
           child: FloatingActionButton.extended(
             backgroundColor: AppColors.white,
-            onPressed: () {},
+            onPressed: () {
+            },
             label: Row(
               children: [
                 Container(
