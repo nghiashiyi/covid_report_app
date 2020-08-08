@@ -1,4 +1,4 @@
-# covid_app
+# Covid Report Application
 
 Application for joining Flutter UI Challenge by Flutter Vietnam
 
