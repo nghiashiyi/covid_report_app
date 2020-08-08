@@ -10,5 +10,5 @@ class Repository {
           return GlobalReport.fromJson(json.decode(value.body));
         }
         return GlobalReport.fromJson(inCase500APIData);
-  }).timeout(Duration(seconds: 10), onTimeout: () => GlobalReport.fromJson(inCase500APIData));
+  }).timeout(Duration(seconds: 8), onTimeout: () => GlobalReport.fromJson(inCase500APIData));
 }

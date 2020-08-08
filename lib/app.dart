@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Animation<double> floatButtonOpacity;
   Animation<Offset> listTransition;
   Animation<Color> color;
+  Animation<Color> loadingColor;
   Future<GlobalReport> getGlobalReport;
 
   int _currentIndex = 0;
@@ -36,10 +37,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    getGlobalReport = widget.repository.getGlobalReport();
+    getGlobalReport = Future.delayed(Duration(seconds: 6), () => widget.repository.getGlobalReport());
 
     loadingAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 2000))
       ..addListener(() { setState(() {}); });
+    loadingColor = ColorTween(begin: Colors.white, end: Colors.red).animate(CurvedAnimation(parent: loadingAnimationController, curve: Curves.fastOutSlowIn));
     listTransition = Tween<Offset>(begin: Offset(3, 0), end: Offset.zero).animate(CurvedAnimation(parent: loadingAnimationController, curve: Curves.ease));
 
     backgroundAnimationController = AnimationController(vsync: this, duration: Duration(milliseconds: 200), )
@@ -73,7 +75,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             height: MediaQuery.of(context).size.height,
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [ AppColors.red, AppColors.white, AppColors.white, AppColors.grey],
+                colors: [ loadingColor.value, AppColors.white, AppColors.white, AppColors.grey],
                 stops: [start.value, start.value, end.value, end.value]
               )
             ),
@@ -150,7 +152,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ),
                         ),
                       ),
-                    ) : Center(
+                    ) :
+                    Center(
                       child: Container(
                         margin: EdgeInsets.only(top: 20),
                         child: Lottie.asset(
